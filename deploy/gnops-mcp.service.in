@@ -1,0 +1,33 @@
+[Unit]
+Description=gnops-mcp read-only MCP server (TED telemetry, logs, caget/camonitor)
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+Restart=always
+RestartSec=5
+TimeoutStartSec=0
+
+# @IMAGE@ is replaced at build time with the exact image this RPM was built with.
+Environment=IMAGE=@IMAGE@
+
+# Pull as `software`, never root (root has no GHCR credentials on production
+# hosts), and only when the image is missing: the tag is pinned, so once it is
+# here there is nothing new to fetch. Without `software` (dev), a missing image
+# fails with the exact `docker pull` to run; Restart=always then starts it.
+ExecStartPre=/bin/sh -c 'docker image inspect "$IMAGE" >/dev/null 2>&1 || runuser -u software -- docker pull "$IMAGE" || { echo "Image $IMAGE is not on this host. As a docker-group user run: docker pull $IMAGE" >&2; exit 1; }'
+ExecStartPre=-/usr/bin/docker rm -f gnops-mcp
+
+# Foreground `docker run --rm`: systemd owns the lifecycle.
+ExecStart=/usr/bin/docker run --rm --name gnops-mcp \
+  --network host \
+  --read-only --tmpfs /tmp \
+  --cap-drop ALL --security-opt no-new-privileges \
+  --env-file /etc/sysconfig/gnops-mcp \
+  ${IMAGE}
+
+ExecStop=/usr/bin/docker stop -t 10 gnops-mcp
+
+[Install]
+WantedBy=multi-user.target

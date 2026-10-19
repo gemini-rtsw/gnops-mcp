@@ -1,0 +1,25 @@
+# Host-specific settings, passed to the container as environment variables.
+# Kept across upgrades (%config(noreplace)). Restart after editing:
+#   systemctl restart gnops-mcp
+
+# MCP endpoint: http://<this host>:MCP_PORT/mcp
+MCP_PORT=8001
+# Extra host names clients may use (space separated), e.g. a DNS alias.
+# The host's own name and FQDN are always allowed.
+MCP_ALLOWED_HOSTS=
+
+# TED Grafana, the front end for telemetry (Archiver Appliance) and logs.
+GRAFANA_URL=http://mkoteddev-lv1:3000
+# Grafana as users' browsers reach it, for grafana_link (empty: same as GRAFANA_URL).
+GRAFANA_PUBLIC_URL=
+# Site for the Telemetry dashboard links: MK or CP.
+TED_SITE=MK
+# Optional service-account token; anonymous access if empty.
+GRAFANA_TOKEN=
+ARCHIVER_DS_UID=cesb7dv10h3i8b
+LOGS_DS_UID=F1zgMdwVz
+
+# Channel Access, for caget/camonitor.
+EPICS_CA_AUTO_ADDR_LIST=YES
+EPICS_CA_ADDR_LIST=
+EPICS_CA_MAX_ARRAY_BYTES=1000000
