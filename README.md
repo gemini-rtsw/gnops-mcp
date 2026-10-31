@@ -16,6 +16,10 @@ operations data, shipped as a container and installed by RPM
 
 There is no put: nothing in the server writes to a PV.
 
+At most `MAX_CONCURRENT` (default 5) Grafana requests and CA calls run at
+once, across all clients; a call that waits more than `QUEUE_WAIT_S` (30 s)
+for a slot fails with "server busy".
+
 ## Install
 
 ```

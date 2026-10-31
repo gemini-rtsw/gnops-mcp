@@ -20,6 +20,8 @@ from urllib.parse import urlencode
 import httpx
 from mcp.server.mcpserver.exceptions import ToolError
 
+from limits import slot
+
 GRAFANA_URL = os.environ.get("GRAFANA_URL", "http://mkoteddev-lv1:3000").rstrip("/")
 GRAFANA_PUBLIC_URL = (os.environ.get("GRAFANA_PUBLIC_URL") or GRAFANA_URL).rstrip("/")
 GRAFANA_TOKEN = os.environ.get("GRAFANA_TOKEN")
@@ -72,7 +74,7 @@ def _check(r: httpx.Response) -> None:
 async def ds_query(queries: list[dict], start_ms: int, end_ms: int) -> dict:
     """POST /api/ds/query, the endpoint Grafana panels use. Returns results keyed by refId."""
     body = {"from": str(start_ms), "to": str(end_ms), "queries": queries}
-    async with _client() as c:
+    async with slot(), _client() as c:
         r = await c.post("/api/ds/query", json=body)
     # On a per-query failure Grafana answers 400 but still returns every query's
     # result, so keep the good ones and let the caller report the bad ones.
@@ -84,7 +86,7 @@ async def ds_query(queries: list[dict], start_ms: int, end_ms: int) -> dict:
 
 async def archiver_get(path: str, params: dict) -> object:
     """GET an Archiver Appliance retrieval endpoint through Grafana's datasource proxy."""
-    async with _client() as c:
+    async with slot(), _client() as c:
         r = await c.get(f"/api/datasources/proxy/uid/{ARCHIVER_DS['uid']}/{path}", params=params)
     _check(r)
     return r.json()
