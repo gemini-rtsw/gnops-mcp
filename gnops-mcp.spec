@@ -7,7 +7,7 @@
 %global appimage ghcr.io/gemini-rtsw/gnops-mcp
 
 Name:      gnops-mcp
-Version:   0.1.0
+Version:   0.1.1
 Release:   1.git%{git_hash}%{?dist}
 Summary:   Read-only MCP server for TED telemetry, logs and live EPICS (caget/camonitor)
 License:   Proprietary
@@ -48,6 +48,9 @@ install -Dpm 0600 deploy/%{name}.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/
 %config(noreplace) %{_sysconfdir}/sysconfig/%{name}
 
 %changelog
+* Fri Oct 30 2026 Hawi Stecher <hawi.stecher@noirlab.edu> - 0.1.1-1
+- Cap concurrent Grafana requests and CA calls (MAX_CONCURRENT, default 5).
+
 * Fri Oct 16 2026 Hawi Stecher <hawi.stecher@noirlab.edu> - 0.1.0-1
 - Initial package: TED telemetry and logs tools from noirlab-ops, plus
   read-only caget/camonitor.

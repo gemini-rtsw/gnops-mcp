@@ -19,6 +19,12 @@ GRAFANA_TOKEN=
 ARCHIVER_DS_UID=cesb7dv10h3i8b
 LOGS_DS_UID=F1zgMdwVz
 
+# At most this many Grafana requests and CA calls run at once, across all
+# clients; a call waits up to QUEUE_WAIT_S seconds for a slot, then fails
+# with "server busy".
+MAX_CONCURRENT=5
+QUEUE_WAIT_S=30
+
 # Channel Access, for caget/camonitor.
 EPICS_CA_AUTO_ADDR_LIST=YES
 EPICS_CA_ADDR_LIST=
