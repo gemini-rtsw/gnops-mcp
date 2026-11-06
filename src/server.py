@@ -7,7 +7,8 @@ Tools:
   Live EPICS      caget, camonitor              (Channel Access; no put)
 
 At most MAX_CONCURRENT (default 5) Grafana requests and CA calls run at once,
-across all clients (limits.py).
+across all clients, and caget/camonitor together touch at most
+CA_MAX_PVS_PER_MIN (default 200) PVs per minute (limits.py).
 
 Two ways to run it:
   python server.py          stdio: the client launches this process and talks
@@ -31,7 +32,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 
 import grafana
 import ca
-from limits import slot
+from limits import ca_budget, slot
 
 mcp = MCPServer("gnops-mcp")
 
@@ -311,9 +312,12 @@ async def caget(pvs: list[str], timeout: float = 3.0) -> list[dict]:
     Returns per PV: value, string form (enum labels, strings and char arrays only), units, alarm
     severity/status, IOC timestamp (ISO UTC), host, and an error if the PV did
     not connect within timeout seconds (max 10).
+    caget and camonitor share a server-wide limit of PVs per minute (default 200); a call
+    over it is refused with the time to wait.
     """
     if not pvs or len(pvs) > ca.MAX_PVS:
         raise ToolError(f"pass 1-{ca.MAX_PVS} PV names")
+    ca_budget("caget", len(pvs))
     async with slot():
         return await asyncio.to_thread(ca.get, pvs, max(0.5, min(timeout, 10.0)))
 
@@ -325,12 +329,13 @@ async def camonitor(pvs: list[str], seconds: float = 10.0, max_updates: int = 50
     Read-only, like caget. Subscribes for `seconds` (max 60), then unsubscribes.
     The first update per PV is its value at subscribe time. Returns per PV the
     updates as [ISO time UTC, value, string form or null, severity], capped at
-    max_updates (max 2000) per PV.
+    max_updates (max 2000) per PV. Counts against the same PVs-per-minute limit as caget.
     """
     if not pvs or len(pvs) > ca.MAX_PVS:
         raise ToolError(f"pass 1-{ca.MAX_PVS} PV names")
     seconds = max(1.0, min(seconds, 60.0))
     max_updates = max(1, min(max_updates, 2000))
+    ca_budget("camonitor", len(pvs))
     async with slot():
         return await asyncio.to_thread(ca.monitor, pvs, seconds, max_updates)
 
