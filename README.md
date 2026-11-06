@@ -18,7 +18,11 @@ There is no put: nothing in the server writes to a PV.
 
 At most `MAX_CONCURRENT` (default 5) Grafana requests and CA calls run at
 once, across all clients; a call that waits more than `QUEUE_WAIT_S` (30 s)
-for a slot fails with "server busy".
+for a slot fails with "server busy". `caget` and `camonitor` together touch
+at most `CA_MAX_PVS_PER_MIN` (default 200) PVs in any minute, across all
+clients: each PV costs a CA search broadcast and an IOC connection. A call over
+the limit fails at once with the reason and the seconds to wait, and the
+refusal is logged (`journalctl -u gnops-mcp`).
 
 ## Install
 

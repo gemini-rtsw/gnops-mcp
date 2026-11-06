@@ -25,6 +25,11 @@ LOGS_DS_UID=F1zgMdwVz
 MAX_CONCURRENT=5
 QUEUE_WAIT_S=30
 
+# caget and camonitor together touch at most this many PVs in any 60 s, across
+# all clients (each PV is a CA search broadcast and an IOC connection). A call
+# over it fails at once with the reason and the seconds to wait.
+CA_MAX_PVS_PER_MIN=200
+
 # Channel Access, for caget/camonitor.
 EPICS_CA_AUTO_ADDR_LIST=YES
 EPICS_CA_ADDR_LIST=
