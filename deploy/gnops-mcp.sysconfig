@@ -1,11 +1,18 @@
 # Host-specific settings, passed to the container as environment variables.
-# Kept across upgrades (%config(noreplace)). Restart after editing:
-#   systemctl restart gnops-mcp
+# The same file serves both ways of running it (README, Install):
+#   container:  copied to ~/gnops-mcp.env next to gnops-mcp.yaml; after editing
+#               docker compose --env-file gnops-mcp.env -f gnops-mcp.yaml up -d
+#   RPM:        /etc/sysconfig/gnops-mcp, kept across upgrades
+#               (%config(noreplace)); after editing  systemctl restart gnops-mcp
+
+# The image docker compose runs: the exact build this file came with. The RPM's
+# systemd unit pins its own copy and ignores this line.
+IMAGE=@IMAGE@
 
 # MCP endpoint: http://<this host>:MCP_PORT/mcp
 MCP_PORT=8001
 # Extra host names clients may use (space separated), e.g. a DNS alias.
-# The host's own name and FQDN are always allowed.
+# The host's FQDN and short name are always allowed.
 MCP_ALLOWED_HOSTS=
 
 # TED Grafana, the front end for telemetry (Archiver Appliance) and logs.
@@ -31,6 +38,10 @@ QUEUE_WAIT_S=30
 CA_MAX_PVS_PER_MIN=200
 
 # Channel Access, for caget/camonitor.
-EPICS_CA_AUTO_ADDR_LIST=YES
-EPICS_CA_ADDR_LIST=
+# MK defaults: the list TED's archiver (container appliance-0 on mkoteddev-lv1)
+# uses, checked 2026-11-06; caget is served through the CA gateway
+# mkoepicsgw-lv1. To re-check on a TED host:
+#   docker inspect appliance-0 --format '{{range .Config.Env}}{{println .}}{{end}}' | grep EPICS_CA
+EPICS_CA_AUTO_ADDR_LIST=NO
+EPICS_CA_ADDR_LIST=10.2.2.255 10.2.126.101 10.2.14.8 10.2.14.9 10.2.128.20 mko-ltcs 192.168.1.203
 EPICS_CA_MAX_ARRAY_BYTES=1000000

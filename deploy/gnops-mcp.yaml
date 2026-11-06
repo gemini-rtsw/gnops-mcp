@@ -1,0 +1,17 @@
+# gnops-mcp as a plain container, for hosts where we have docker but no sudo
+# (no RPM, no systemd), e.g. mkoteddev-lv1 as user software. Same hardening as
+# the RPM's systemd unit. Keep this file and gnops-mcp.env side by side:
+#   docker compose --env-file gnops-mcp.env -f gnops-mcp.yaml up -d
+# IMAGE in gnops-mcp.env picks the pinned build; restart: unless-stopped brings
+# it back after a crash or a reboot.
+services:
+  gnops-mcp:
+    image: ${IMAGE:?set IMAGE in gnops-mcp.env to the pinned image tag}
+    container_name: gnops-mcp
+    restart: unless-stopped
+    network_mode: host          # Channel Access needs the host network
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    env_file: gnops-mcp.env
