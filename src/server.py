@@ -351,8 +351,11 @@ if __name__ == "__main__":
         mcp.run()
     else:
         # Only accept requests addressed to this machine by name (DNS-rebinding guard).
-        # MCP_ALLOWED_HOSTS adds names (e.g. a DNS alias) to the host's FQDN.
-        names = [socket.getfqdn(), socket.gethostname(), "localhost", "127.0.0.1"]
+        # The host's FQDN and short name are allowed; MCP_ALLOWED_HOSTS adds more
+        # (e.g. a DNS alias). On mkoteddev-lv1 gethostname() is the FQDN, so the
+        # short name clients use had to be derived.
+        fqdn, host = socket.getfqdn(), socket.gethostname()
+        names = [fqdn, host, fqdn.split(".")[0], host.split(".")[0], "localhost", "127.0.0.1"]
         names += os.environ.get("MCP_ALLOWED_HOSTS", "").split()
         names = list(dict.fromkeys(n for n in names if n))
         security = TransportSecuritySettings(
